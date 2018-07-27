@@ -84,6 +84,7 @@ app.get("/testLimo", async (req, res) => {
       lon: car.location.position.lon.toString()
     }
   });
+  lim1.save();
   res.json(lim1);
 });
 
