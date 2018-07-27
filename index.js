@@ -4,6 +4,7 @@ const limo = require("./model/limo");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const axios = require("axios");
+const mollimoApi = "http://www.mollimo.hu/data/cars.js";
 
 const mongoOptions = {
   server: { socketOptions: { keepAlive: 300000, connectTimeoutMS: 30000 } },
@@ -57,9 +58,29 @@ app.get("/getLimos", (req, res) => {
 });
 
 app.get("/mol", async (req, res) => {
-  let mollimoApi = "http://www.mollimo.hu/data/cars.js";
   const cars = await axios.get(mollimoApi);
   res.json(JSON.parse(cars.data.split("window.cars = ")[1]));
+});
+
+app.get("/testLimo", async (req, res) => {
+  const carsReq = await axios.get(mollimoApi);
+  const cars = JSON.parse(carsReq.data.split("window.cars = ")[1]);
+  const car = cars[0];
+
+  const lim1 = new limo({
+    limo_id: car.description.id,
+    energyLevel: car.status.energyLevel,
+    model: car.description.model,
+    cityId: car.description.cityId,
+    plate: car.description.name,
+    locations: [
+      {
+        lat: car.location.position.lat.toString(),
+        lon: car.location.position.lon.toString()
+      }
+    ]
+  });
+  res.json(lim1);
 });
 
 conn.once("open", () => {
