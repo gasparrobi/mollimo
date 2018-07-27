@@ -123,6 +123,33 @@ app.get("/getOneLimo", async (req, res) => {
   res.json(lim);
 });
 
+app.get("/updateLimos", async (req, res) => {
+  const carsReq = await axios.get(mollimoApi);
+  const cars = JSON.parse(carsReq.data.split("window.cars = ")[1]);
+  const changed = [];
+
+  cars.forEach(async car => {
+    const existing = await limo.findOne({ limo_id: car.description.id });
+    if (existing !== null) {
+      if (
+        existing.recentLocation.lat.toString() !== car.location.position.lat.toString() ||
+        existing.recentLocation.lon.toString() !== car.location.position.lon.toString()
+      ) {
+        existing.recentLocation.lat = car.location.position.lat.toString();
+        existing.recentLocation.lon = car.location.position.lon.toString();
+        existing.locations.push({
+          lat: car.location.position.lat.toString(),
+          lon: car.location.position.lon.toString()
+        });
+        changed.push(existing);
+        existing.save();
+      }
+    }
+  });
+
+  res.json(changed);
+});
+
 conn.once("open", () => {
   app.listen(8080);
 });
