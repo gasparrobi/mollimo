@@ -118,6 +118,11 @@ app.get("/savelimos", async (req, res) => {
   res.json(limos);
 });
 
+app.get("/getOneLimo", async (req, res) => {
+  const lim = await limo.findOne({ limo_id: "WVWZZZAAZJD122240" }).exec();
+  res.json(lim);
+});
+
 conn.once("open", () => {
   app.listen(8080);
 });
