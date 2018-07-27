@@ -8,10 +8,24 @@ const limoSchema = new Schema({
     required: [true, "limo_id required"],
     unique: [true, "limo_id already exists"]
   },
-  type: {
+  energyLevel: {
+    type: Number
+  },
+  model: {
     type: String,
     default: "up"
-  }
+  },
+  cityId: {
+    type: String
+  },
+  plate: {
+    type: String
+  },
+  locations: [{
+    date:{type: Date, default: Date.now},
+    lat: {type: String},
+    lon: {type: String}
+  }]
 });
 
 module.exports = mongoose.model("limo", limoSchema);
