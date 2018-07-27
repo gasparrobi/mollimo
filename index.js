@@ -94,7 +94,7 @@ app.get("/savelimos", async (req, res) => {
   const limos = [];
 
   cars.forEach(car => {
-    const lim1 = new limo({
+    const lim = new limo({
       limo_id: car.description.id,
       energyLevel: car.status.energyLevel,
       model: car.description.model,
@@ -111,12 +111,12 @@ app.get("/savelimos", async (req, res) => {
         lon: car.location.position.lon.toString()
       }
     });
-    await lim1.save();
+    limos.push(lim);
+    lim.save();
   });
 
   res.json(limos);
-
-})
+});
 
 conn.once("open", () => {
   app.listen(8080);
