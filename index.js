@@ -78,7 +78,11 @@ app.get("/testLimo", async (req, res) => {
         lat: car.location.position.lat.toString(),
         lon: car.location.position.lon.toString()
       }
-    ]
+    ],
+    recentLocation: {
+      lat: car.location.position.lat.toString(),
+      lon: car.location.position.lon.toString()
+    }
   });
   res.json(lim1);
 });
