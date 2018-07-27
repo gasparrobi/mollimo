@@ -88,6 +88,36 @@ app.get("/testLimo", async (req, res) => {
   res.json(lim1);
 });
 
+app.get("/savelimos", async (req, res) => {
+  const carsReq = await axios.get(mollimoApi);
+  const cars = JSON.parse(carsReq.data.split("window.cars = ")[1]);
+  const limos = [];
+
+  cars.forEach(car => {
+    const lim1 = new limo({
+      limo_id: car.description.id,
+      energyLevel: car.status.energyLevel,
+      model: car.description.model,
+      cityId: car.description.cityId,
+      plate: car.description.name,
+      locations: [
+        {
+          lat: car.location.position.lat.toString(),
+          lon: car.location.position.lon.toString()
+        }
+      ],
+      recentLocation: {
+        lat: car.location.position.lat.toString(),
+        lon: car.location.position.lon.toString()
+      }
+    });
+    await lim1.save();
+  });
+
+  res.json(limos);
+
+})
+
 conn.once("open", () => {
   app.listen(8080);
 });
