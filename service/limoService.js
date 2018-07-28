@@ -17,7 +17,6 @@ module.exports = class LimoService {
 
   async getLimos() {
     let limos = await limo.find().exec();
-    console.log(limos);
     return limos;
   }
 
