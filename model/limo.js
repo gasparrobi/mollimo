@@ -24,13 +24,13 @@ const limoSchema = new Schema({
   locations: [
     {
       date: { type: Date, default: Date.now },
-      lat: { type: String },
-      lon: { type: String }
+      lat: { type: Number },
+      lon: { type: Number }
     }
   ],
   recentLocation: {
-    lat: { type: String },
-    lon: { type: String }
+    lat: { type: Number },
+    lon: { type: Number }
   }
 });
 

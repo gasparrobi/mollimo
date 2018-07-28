@@ -4,14 +4,18 @@ const limo = require("./model/limo");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const axios = require("axios");
+const schedule = require("node-schedule");
 const mollimoApi = "http://www.mollimo.hu/data/cars.js";
+const keys = require("./config/properties");
+const LimoService = require("./service/LimoService");
+const limoService = new LimoService();
 
 const mongoOptions = {
   server: { socketOptions: { keepAlive: 300000, connectTimeoutMS: 30000 } },
   replset: { socketOptions: { keepAlive: 300000, connectTimeoutMS: 30000 } }
 };
 
-const mongodbUri = "mongodb://localhost:27017";
+const mongodbUri = keys.mongo.mongodbUri;
 
 mongoose.Promise = require("bluebird");
 mongoose.connect(
@@ -44,48 +48,14 @@ app.get("/", (req, res) => {
   res.send("hello mongodb");
 });
 
-app.get("/addLimo", (req, res) => {
-  let lim1 = new limo({ limo_id: "1" });
-  lim1.save();
-  res.send("add limo");
+app.get("/getLimos", async (req, res) => {
+  let limos = await limoService.getLimos();
+  res.json(limos);
 });
 
-app.get("/getLimos", (req, res) => {
-  limo.find((err, limos) => {
-    res.type("application/json");
-    res.status(200).json(limos);
-  });
-});
-
-app.get("/mol", async (req, res) => {
-  const cars = await axios.get(mollimoApi);
-  res.json(JSON.parse(cars.data.split("window.cars = ")[1]));
-});
-
-app.get("/testLimo", async (req, res) => {
-  const carsReq = await axios.get(mollimoApi);
-  const cars = JSON.parse(carsReq.data.split("window.cars = ")[1]);
-  const car = cars[0];
-
-  const lim1 = new limo({
-    limo_id: car.description.id,
-    energyLevel: car.status.energyLevel,
-    model: car.description.model,
-    cityId: car.description.cityId,
-    plate: car.description.name,
-    locations: [
-      {
-        lat: car.location.position.lat.toString(),
-        lon: car.location.position.lon.toString()
-      }
-    ],
-    recentLocation: {
-      lat: car.location.position.lat.toString(),
-      lon: car.location.position.lon.toString()
-    }
-  });
-  lim1.save();
-  res.json(lim1);
+app.get("/liveData", async (req, res) => {
+  const cars = await limoService.getLiveData();
+  res.json(cars);
 });
 
 app.get("/savelimos", async (req, res) => {
@@ -102,13 +72,13 @@ app.get("/savelimos", async (req, res) => {
       plate: car.description.name,
       locations: [
         {
-          lat: car.location.position.lat.toString(),
-          lon: car.location.position.lon.toString()
+          lat: car.location.position.lat,
+          lon: car.location.position.lon
         }
       ],
       recentLocation: {
-        lat: car.location.position.lat.toString(),
-        lon: car.location.position.lon.toString()
+        lat: car.location.position.lat,
+        lon: car.location.position.lon
       }
     });
     limos.push(lim);
@@ -119,37 +89,26 @@ app.get("/savelimos", async (req, res) => {
 });
 
 app.get("/getOneLimo", async (req, res) => {
-  const lim = await limo.findOne({ limo_id: "WVWZZZAAZJD122240" }).exec();
-  res.json(lim);
+  console.log(req.query.limoId);
+  const limo = await limoService.getOneLimo(req.query.limoId);
+  res.json(limo);
 });
 
 app.get("/updateLimos", async (req, res) => {
-  const carsReq = await axios.get(mollimoApi);
-  const cars = JSON.parse(carsReq.data.split("window.cars = ")[1]);
-  const changed = [];
-
-  cars.forEach(async car => {
-    const existing = await limo.findOne({ limo_id: car.description.id });
-    if (existing !== null) {
-      if (
-        existing.recentLocation.lat.toString() !== car.location.position.lat.toString() ||
-        existing.recentLocation.lon.toString() !== car.location.position.lon.toString()
-      ) {
-        existing.recentLocation.lat = car.location.position.lat.toString();
-        existing.recentLocation.lon = car.location.position.lon.toString();
-        existing.locations.push({
-          lat: car.location.position.lat.toString(),
-          lon: car.location.position.lon.toString()
-        });
-        changed.push(existing);
-        existing.save();
-      }
-    }
-  });
-
-  res.json(changed);
+  limoService.updateLimos();
+  res.json({ success: true });
 });
 
+let checkSameCoords = (a, b) => {
+  return Math.abs(a - b) < 0.0003;
+};
+
 conn.once("open", () => {
-  app.listen(8080);
+  app.listen(8080, () => {
+    schedule.scheduleJob(" */1 * * * *", async () => {
+      console.time("dbsave");
+      limoService.updateLimos();
+      console.timeEnd("dbsave");
+    });
+  });
 });
