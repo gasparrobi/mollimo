@@ -7,7 +7,7 @@ const axios = require("axios");
 const schedule = require("node-schedule");
 const mollimoApi = "http://www.mollimo.hu/data/cars.js";
 const keys = require("./config/properties");
-const LimoService = require("./service/LimoService");
+const LimoService = require("./service/limoService");
 const limoService = new LimoService();
 
 const mongoOptions = {
