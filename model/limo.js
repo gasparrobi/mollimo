@@ -25,7 +25,8 @@ const limoSchema = new Schema({
     {
       date: { type: Date, default: Date.now },
       lat: { type: Number },
-      lon: { type: Number }
+      lon: { type: Number },
+      energyLevel: { type: Number }
     }
   ],
   recentLocation: {
