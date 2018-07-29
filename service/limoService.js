@@ -25,8 +25,13 @@ module.exports = class LimoService {
     return JSON.parse(cars.data.split("window.cars = ")[1]);
   }
 
-  async getOneLimo(limoId) {
+  async getLimoById(limoId) {
     const lim = await limo.findOne({ limo_id: limoId }).exec();
+    return lim;
+  }
+
+  async getLimoByPlate(plate) {
+    const lim = await limo.findOne({ plate: plate }).exec();
     return lim;
   }
 

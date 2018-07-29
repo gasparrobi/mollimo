@@ -88,9 +88,15 @@ app.get("/savelimos", async (req, res) => {
   res.json(limos);
 });
 
-app.get("/getOneLimo", async (req, res) => {
+app.get("/getLimoById", async (req, res) => {
   console.log(req.query.limoId);
-  const limo = await limoService.getOneLimo(req.query.limoId);
+  const limo = await limoService.getLimoById(req.query.limoId);
+  res.json(limo);
+});
+
+app.get("/getLimoByPlate", async (req, res) => {
+  console.log(req.query.plate);
+  const limo = await limoService.getLimoByPlate(req.query.plate);
   res.json(limo);
 });
 
