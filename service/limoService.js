@@ -44,6 +44,7 @@ module.exports = class LimoService {
       ) {
         existing.recentLocation.lat = car.location.position.lat;
         existing.recentLocation.lon = car.location.position.lon;
+        existing.energyLevel = car.status.energyLevel;
         existing.locations.push({
           lat: car.location.position.lat,
           lon: car.location.position.lon,
